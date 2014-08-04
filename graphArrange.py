@@ -145,71 +145,72 @@ def runTrial(graph, annealFunc, resultQueue):
     resultQueue.put(annealFunc(graph, 
         randomPositions(len(graph))))
 
-# make graph
-n = 40
-'''
-graph = [[1, 20, 1, 1, 1],
-         [20, 1, 20, 1, 1],
-         [1, 20, 1, 20, 1],
-         [1, 1, 20, 1, 20],
-         [1, 1, 1, 20, 1]]
-graph = [[ 0, 20, 20,  1,  1,  1,  1],
-         [20,  0, 20,  1,  1,  1,  1],
-         [20, 20,  0,  1,  1,  1,  1],
-         [ 1,  1,  1,  0, 20,  1,  1],
-         [ 1,  1,  1, 20,  0, 20,  1],
-         [ 1,  1,  1,  1, 20,  0, 20],
-         [ 1,  1,  1,  1,  1, 20,  0]]
-graph = randomGraph(20)
-'''
-
-graph = []
-for i in xrange(n):
-    graph.append([1]*n)
-    graph[i][i-1] = 100
-    graph[i][i] = 0
-    graph[i][(i+1)%n] = 100
-
-# set up fitness functions
-f0 = lambda r2, edge: edge*r2 - r2**.5
-f1 = lambda r2, edge: edge*2**r2 - 2**(-r2)
-f2 = lambda r2, edge: edge*r2**.5 + 1.0/r2**.25
-fitness0 = getFitness(f0)
-fitness1 = getFitness(f1)
-fitness2 = getFitness(f2)
-fitnesses = [fitness0, fitness1, fitness2]
-
-fitness = fitness0
-partialFitness = getPartialFitness(f0)
-
-# set up anneal functions
-anneal0 = lambda g, p: multiAnneal(g, p, 
-        20000, 1.0, .0003, fitness)
-anneal1 = lambda g, p: multiAnneal(g, p,
-        100000, 1.0, .0003, fitness)
-annealFunc = anneal0
-
-# run trials
-trials = 6
-procs = []
-q = Queue()
-time0 = time.time()
-for _ in xrange(trials):
-    p = Process(target=runTrial, 
-            args=(graph, annealFunc, q))
-    p.start()
-    procs.append(p)
-for p in procs:
-    p.join()
-time1 = time.time()
-p = [q.get() for _ in xrange(trials)]
-
-scores = [fitness(graph, p[i]) for i in xrange(trials)]
-print "score: " + str(sum(scores)/trials)
-print "time: %d:%05.2f" % (int((time1-time0)/60), \
-        (time1-time0)%60)
-
-# draw and save graphs
-for i in xrange(trials):
-    im = drawGraph(p[i], colors+[0]*n)
-    im.save("graphs/graph"+str(i)+".bmp")
+if __name__ == "__main__":
+    # make graph
+    n = 40
+    '''
+    graph = [[1, 20, 1, 1, 1],
+             [20, 1, 20, 1, 1],
+             [1, 20, 1, 20, 1],
+             [1, 1, 20, 1, 20],
+             [1, 1, 1, 20, 1]]
+    graph = [[ 0, 20, 20,  1,  1,  1,  1],
+             [20,  0, 20,  1,  1,  1,  1],
+             [20, 20,  0,  1,  1,  1,  1],
+             [ 1,  1,  1,  0, 20,  1,  1],
+             [ 1,  1,  1, 20,  0, 20,  1],
+             [ 1,  1,  1,  1, 20,  0, 20],
+             [ 1,  1,  1,  1,  1, 20,  0]]
+    graph = randomGraph(20)
+    '''
+    
+    graph = []
+    for i in xrange(n):
+        graph.append([1]*n)
+        graph[i][i-1] = 100
+        graph[i][i] = 0
+        graph[i][(i+1)%n] = 100
+    
+    # set up fitness functions
+    f0 = lambda r2, edge: edge*r2 - r2**.5
+    f1 = lambda r2, edge: edge*2**r2 - 2**(-r2)
+    f2 = lambda r2, edge: edge*r2**.5 + 1.0/r2**.25
+    fitness0 = getFitness(f0)
+    fitness1 = getFitness(f1)
+    fitness2 = getFitness(f2)
+    fitnesses = [fitness0, fitness1, fitness2]
+    
+    fitness = fitness0
+    partialFitness = getPartialFitness(f0)
+    
+    # set up anneal functions
+    anneal0 = lambda g, p: multiAnneal(g, p, 
+            20000, 1.0, .0003, fitness)
+    anneal1 = lambda g, p: multiAnneal(g, p,
+            100000, 1.0, .0003, fitness)
+    annealFunc = anneal0
+    
+    # run trials
+    trials = 6
+    procs = []
+    q = Queue()
+    time0 = time.time()
+    for _ in xrange(trials):
+        p = Process(target=runTrial, 
+                args=(graph, annealFunc, q))
+        p.start()
+        procs.append(p)
+    for p in procs:
+        p.join()
+    time1 = time.time()
+    p = [q.get() for _ in xrange(trials)]
+    
+    scores = [fitness(graph, p[i]) for i in xrange(trials)]
+    print "score: " + str(sum(scores)/trials)
+    print "time: %d:%05.2f" % (int((time1-time0)/60), \
+            (time1-time0)%60)
+    
+    # draw and save graphs
+    for i in xrange(trials):
+        im = drawGraph(p[i], colors+[0]*n)
+        im.save("graphs/graph"+str(i)+".bmp")
